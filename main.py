@@ -1,66 +1,24 @@
-from pathlib import Path
-from colorama import Fore, Style, init
-
 from decoder import Decoder
 from replacer import Replacer
 
-init(autoreset=True)
+with open("code.lua","r",encoding="utf8") as f:
+    source = f.read()
 
+decoder = Decoder(source)
+decoder.parse()
 
-class LuaUDecompiler:
+print(f"Decoded {len(decoder.strings)} strings")
 
-    def __init__(self, path):
+replacer = Replacer(
+    source,
+    decoder.strings
+)
 
-        self.path = Path(path)
+output = replacer.replace()
 
-        self.source = self.path.read_text(
-            encoding="utf8",
-            errors="ignore"
-        )
+print(f"Replaced {replacer.replaced} calls")
 
-    def run(self):
+with open("output.lua","w",encoding="utf8") as f:
+    f.write(output)
 
-        print(Fore.CYAN + "[*] Reading file")
-
-        decoder = Decoder(self.source)
-
-        decoder.parse()
-
-        print(
-            Fore.GREEN +
-            f"[+] Decoded {len(decoder.strings)} strings"
-        )
-
-        replacer = Replacer(
-            self.source,
-            decoder.strings
-        )
-
-        output = replacer.replace()
-
-        out = Path("output.lua")
-
-        out.write_text(
-            output,
-            encoding="utf8"
-        )
-
-        print(
-            Fore.GREEN +
-            "[+] Saved -> output.lua"
-        )
-
-
-if __name__ == "__main__":
-
-    import sys
-
-    if len(sys.argv) != 2:
-
-        print("Usage:")
-        print("python main.py code.lua")
-        exit()
-
-    LuaUDecompiler(
-        sys.argv[1]
-    ).run()
+print("Saved output.lua")
